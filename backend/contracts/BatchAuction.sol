@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 
-contract BatchAuction {
+contract BatchAuction is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     OrderBook public orderBook;
@@ -23,7 +23,7 @@ contract BatchAuction {
 
 
     // Simple batch Execution
-    function executeBatch() external {
+    function executeBatch() external nonReentrant {
 
         uint256 matched = matchingEngine.matchOrders();
         require(matched > 0, "No matches");
@@ -33,7 +33,7 @@ contract BatchAuction {
 
         for(uint256 i = 0; i < count; i++){
             // Read Order
-            (address user, address tokenIn, uint256 amountIn) = orderBook.orders(i);
+            (address user, address tokenIn, , uint256 amountIn, ,) = orderBook.orders(i);
 
             IERC20(tokenIn).safeTransferFrom(
                 user,
