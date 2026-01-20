@@ -49,6 +49,7 @@ contract BatchAuction is ReentrancyGuard {
     function computClearingPrice() internal view returns(uint256 price) {
         uint256 count = orderBook.getOrdersCount();
         uint256 total;
+        uint256 filledCount;
 
         for (uint256 i = 0; i < count; i++){
             (
@@ -60,12 +61,13 @@ contract BatchAuction is ReentrancyGuard {
 
             if (filled) {
                 total += amountIn;
+                filledCount++;
             }
 
         }
 
-        require(total > 0, "No Filled orders");
-        price = total / count;
+        require(filledCount > 0, "No Filled orders");
+        price = total / filledCount;
 
     }
 
@@ -83,13 +85,11 @@ contract BatchAuction is ReentrancyGuard {
         require(matched > 0, "No matches");
 
         uint256 count = orderBook.getOrdersCount();
-        require(count > 0, "No Orders");
-
         // transfer tokenIn from each user for all orders
 
         for(uint256 i = 0; i < count; i++){
             // Read Order
-            (address user, address tokenIn, , uint256 amountIn, ,) = orderBook.orders(i);
+            (address user, address tokenIn, , uint256 amountIn, , bool filled) = orderBook.orders(i);
 
             IERC20(tokenIn).safeTransferFrom(
                 user,

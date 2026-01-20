@@ -18,8 +18,10 @@ contract MatchingEngine {
 
         for (uint256 i = 0; i < count; i++) {
             (
-                , address buyTokenIn,
-                , ,
+                ,
+                address buyTokenIn,
+                address buyTokenOut,
+                ,
                 OrderBook.Side buySide,
                 bool buyFilled
             ) = orderBook.orders(i);
@@ -28,14 +30,18 @@ contract MatchingEngine {
 
             for (uint256 j = i + 1; j < count; j++) {
                 (
-                    , address sellTokenIn,
-                    , ,
+                    ,
+                    address sellTokenIn,
+                    address sellTokenOut,
+                    ,
                     OrderBook.Side sellSide,
                     bool sellFilled
                 ) = orderBook.orders(j);
 
                 if (
-                    sellSide == OrderBook.Side.Sell && !sellFilled && buyTokenIn == sellTokenIn
+                    sellSide == OrderBook.Side.Sell && !sellFilled && 
+                    buyTokenIn == sellTokenOut &&
+                    buyTokenOut == sellTokenIn
                 ) {
                     orderBook.markFilled(i);
                     orderBook.markFilled(j);

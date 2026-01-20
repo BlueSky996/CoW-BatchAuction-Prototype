@@ -27,6 +27,15 @@ contract OrderBook {
         Side side
     );
 
+    constructor() {
+        matcher = msg.sender;
+    }
+
+    modifier onlyMatcher() {
+        require(msg.sender == matcher, "Not matcher");
+        _;
+    }
+
     function placeOrder( address tokenIn, address tokenOut, uint256 amountIn, Side side) external {
         orders.push(
             Order({
@@ -53,7 +62,8 @@ contract OrderBook {
         return orders.length;
     }
 
-    function markFilled(uint256 orderId) external {
+    function markFilled(uint256 orderId) external onlyMatcher {
+        require(!orders[orderId].filled, "Already Filled");
         orders[orderId].filled = true;
     }
 
