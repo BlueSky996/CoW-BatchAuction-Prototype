@@ -1,54 +1,59 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "forge-std/Test.sol;
+import "forge-std/Test.sol";
 import "../backend/contracts/BatchAuction.sol";
 import "../backend/contracts/OrderBook.sol";
 import "../backend/contracts/MatchingEngine.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../backend/contracts/ERC20Mock.sol";
+
 
 contract BatchAuctionTest is Test {
 
     OrderBook orderBook;
     MatchingEngine matchingEngine;
-    BatchAuction batchauction;
-    ERC20 token;
+    BatchAuction batchAuction;
+
+    ERC20Mock tokenA;
+    ERC20Mock tokenB;
 
     address user1 = address(0x1);
     address user2 = address(0x2);
 
     function setUp() public {
         // Deploy Erc20 token
-        token = new ERC20("test Token", "TST");
+        tokenA = new ERC20Mock("Token A", "TKA");
+        tokenB = new ERC20Mock("Token B", "TKB");
 
-        // Deploy OrderBook and MatchingEngine
+        // Deploy OrderBook and MatchingEngine and BatchAuction
         orderBook = new OrderBook();
         matchingEngine = new MatchingEngine(address(orderBook));
-
-        //Deploy BatchAuction
+        orderBook.setMatcher(address(matchingEngine));
         batchAuction = new BatchAuction(address(orderBook), address(matchingEngine));
 
         // mint tokens to users
-        token.mint(user1, 1000 ether);
-        token.mint(user2, 1000 ether)
+        tokenA.mint(user1, 1000 ether);
+        tokenB.mint(user2, 1000 ether);
     }
 
     function testPlacedAndExecutedBatch() public {
+        // User 1 place Buy order (TokenA -> TokenB)
         vm.startPrank(user1);
-        token.approve(address(batchAuction), 500 ether);
-        orderBook.placedOrder(address(token), address(token), 500 ether, OrderBook.Side.Buy);
+        tokenA.approve(address(batchAuction), 500 ether);
+        orderBook.placeOrder(address(tokenA), address(tokenB), 500 ether, OrderBook.Side.Buy);
         vm.stopPrank();
-
+        
+        // User2 place sell order ( tokenB -> TokenA)
         vm.startPrank(user2);
-        token.approve(address(batchAuction), 500 ether);
-        orderBook.placeOrder(address(token), address(token), 500 ether, OrderBook.Side.Sell);
+        tokenB.approve(address(batchAuction), 500 ether);
+        orderBook.placeOrder(address(tokenB), address(tokenA), 500 ether, OrderBook.Side.Sell);
         vm.stopPrank();
 
         // Execute batch
         batchAuction.executeBatch();
 
-        // Check clearing price
-        uint256 price = batchAuction.computClearingPrice();
-        assertEq(price, 500 ether);
+        // assert token were transferred to batchAuction
+        assertEq(tokenA.balanceOf(address(batchAuction)), 500 ether);
+        assertEq(tokenB.balanceOf(address(batchAuction)), 500 ether);
     }
 }

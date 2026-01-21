@@ -18,6 +18,8 @@ contract OrderBook {
 
     Order[] public orders;
 
+    address public matcher;
+
     event OrderPlaced(
         uint256 indexed orderId,
         address indexed user,
@@ -65,6 +67,11 @@ contract OrderBook {
     function markFilled(uint256 orderId) external onlyMatcher {
         require(!orders[orderId].filled, "Already Filled");
         orders[orderId].filled = true;
+    }
+
+    function setMatcher(address _matcher) external {
+        require(msg.sender == matcher, "Only current matcher");
+        matcher = _matcher;
     }
 
     
