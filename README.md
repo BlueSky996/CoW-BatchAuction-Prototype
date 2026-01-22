@@ -1,66 +1,122 @@
-## Foundry
+CoWScope – Batch Auction Prototype
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This project is a simplified, educational implementation of a CoW Protocol–style batch auction built in Solidity.
+It demonstrates how off-chain intent aggregation concepts can be expressed using on-chain components such as an order book, matching engine, and batch settlement logic.
 
-Foundry consists of:
+The goal of this repository is protocol design demonstration, not a production-ready DEX.
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+✨ Overview
 
-## Documentation
+The system is composed of three main contracts:
 
-https://book.getfoundry.sh/
+OrderBook
+Stores user orders and maintains their lifecycle.
 
-## Usage
+MatchingEngine
+Matches compatible buy and sell orders within a batch.
 
-### Build
+BatchAuction
+Executes matched orders in a single batch and computes a uniform clearing price.
 
-```shell
-$ forge build
-```
+Orders are collected first, matched separately, and settled together — mirroring the core idea behind CoW-style batch auctions.
 
-### Test
+🧠 Design Philosophy
 
-```shell
-$ forge test
-```
+Clear separation of concerns
 
-### Format
+Gas-aware iteration patterns
 
-```shell
-$ forge fmt
-```
+Minimal state mutation
 
-### Gas Snapshots
+Explicit matching and settlement phases
 
-```shell
-$ forge snapshot
-```
+Easy-to-audit control flow
 
-### Anvil
+This project intentionally avoids unnecessary complexity such as pricing curves, partial fills, or solver competition.
 
-```shell
-$ anvil
-```
+🔧 Contracts
+OrderBook
 
-### Deploy
+Stores all submitted orders
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+Tracks order side (Buy / Sell)
 
-### Cast
+Allows only the matching engine to mark orders as filled
 
-```shell
-$ cast <subcommand>
-```
+MatchingEngine
 
-### Help
+Iterates through open orders
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Matches compatible buy/sell pairs
+
+Marks matched orders as filled
+
+Emits match events for off-chain visibility
+
+BatchAuction
+
+Executes settlement for matched orders
+
+Transfers tokenIn from users
+
+Computes a simple uniform clearing price
+
+Protected against reentrancy
+
+🧪 Testing
+
+The project uses Foundry for testing.
+
+Covered scenarios:
+
+Order placement
+
+Order matching
+
+Batch execution
+
+Token transfers on settlement
+
+Run tests with:
+
+forge test
+
+
+Verbose output:
+
+forge test -vvv
+
+🚧 Limitations (Intentional)
+
+This is not a production DEX.
+
+Missing by design:
+
+Partial fills
+
+Slippage protection
+
+Price oracles
+
+Solver competition
+
+MEV protection
+
+Signature-based off-chain orders
+
+These features are intentionally excluded to keep the focus on core batch auction mechanics.
+
+-- Why This Project ?
+
+This repository exists to demonstrate:
+
+Understanding of modern DEX architectures
+
+Protocol-level thinking beyond simple swaps
+
+Clean Solidity design with testing discipline
+
+
+📜 License
+
+MIT
