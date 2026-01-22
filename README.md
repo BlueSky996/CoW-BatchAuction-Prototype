@@ -1,26 +1,39 @@
 CoWScope – Batch Auction Prototype
 
-This project is a simplified, educational implementation of a CoW Protocol–style batch auction built in Solidity.
-It demonstrates how off-chain intent aggregation concepts can be expressed using on-chain components such as an order book, matching engine, and batch settlement logic.
+A simplified, educational implementation of a CoW Protocol–style batch auction written in Solidity.
 
-The goal of this repository is protocol design demonstration, not a production-ready DEX.
+This repository demonstrates how off-chain intent aggregation concepts can be expressed using on-chain components such as an order book, a matching engine, and batch settlement logic.
 
-✨ Overview
+The goal of this project is protocol design demonstration, not a production-ready decentralized exchange.
+
+Overview
 
 The system is composed of three main contracts:
 
 OrderBook
-Stores user orders and maintains their lifecycle.
+
+Stores user orders
+
+Maintains order lifecycle and state
 
 MatchingEngine
-Matches compatible buy and sell orders within a batch.
+
+Matches compatible buy and sell orders within a batch
+
+Emits match events for off-chain visibility
 
 BatchAuction
-Executes matched orders in a single batch and computes a uniform clearing price.
 
-Orders are collected first, matched separately, and settled together — mirroring the core idea behind CoW-style batch auctions.
+Executes matched orders in a single batch
 
-🧠 Design Philosophy
+Computes a uniform clearing price
+
+Settles all matched orders atomically
+
+Orders are collected first, matched separately, and settled together.
+This mirrors the core idea behind CoW-style batch auctions.
+
+Design Philosophy
 
 Clear separation of concerns
 
@@ -34,24 +47,24 @@ Easy-to-audit control flow
 
 This project intentionally avoids unnecessary complexity such as pricing curves, partial fills, or solver competition.
 
-🔧 Contracts
+Contracts
 OrderBook
 
 Stores all submitted orders
 
 Tracks order side (Buy / Sell)
 
-Allows only the matching engine to mark orders as filled
+Restricts order settlement to the matching engine
 
 MatchingEngine
 
 Iterates through open orders
 
-Matches compatible buy/sell pairs
+Matches compatible buy and sell pairs
 
 Marks matched orders as filled
 
-Emits match events for off-chain visibility
+Emits match events
 
 BatchAuction
 
@@ -63,7 +76,7 @@ Computes a simple uniform clearing price
 
 Protected against reentrancy
 
-🧪 Testing
+Testing
 
 The project uses Foundry for testing.
 
@@ -77,7 +90,7 @@ Batch execution
 
 Token transfers on settlement
 
-Run tests with:
+Run tests:
 
 forge test
 
@@ -86,11 +99,11 @@ Verbose output:
 
 forge test -vvv
 
-🚧 Limitations (Intentional)
+Limitations (Intentional)
 
 This is not a production DEX.
 
-Missing by design:
+The following features are intentionally excluded:
 
 Partial fills
 
@@ -104,9 +117,9 @@ MEV protection
 
 Signature-based off-chain orders
 
-These features are intentionally excluded to keep the focus on core batch auction mechanics.
+The focus is kept strictly on core batch auction mechanics.
 
--- Why This Project ?
+Why This Project
 
 This repository exists to demonstrate:
 
@@ -114,9 +127,10 @@ Understanding of modern DEX architectures
 
 Protocol-level thinking beyond simple swaps
 
-Clean Solidity design with testing discipline
+Clean Solidity design with proper testing discipline
 
+It is intended as a technical portfolio and research prototype.
 
-📜 License
+License
 
 MIT
