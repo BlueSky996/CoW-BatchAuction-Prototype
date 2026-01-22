@@ -74,5 +74,9 @@ contract OrderBook {
         matcher = _matcher;
     }
 
+    function getOrder(uint256 orderId) external view returns (Order memory) {
+    return orders[orderId];
+    }
+
     
 }

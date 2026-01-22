@@ -39,38 +39,11 @@ contract BatchAuction is ReentrancyGuard {
         matchingEngine = MatchingEngine(_matchingEngine);
     }
 
-
    /**
    * @dev compute a simples uniform clearing price.
    *        currently, it calculate average amountIn of filled orders.
    * @return price the computed clearing price
    */
-
-    function computClearingPrice() internal view returns(uint256 price) {
-        uint256 count = orderBook.getOrdersCount();
-        uint256 total;
-        uint256 filledCount;
-
-        for (uint256 i = 0; i < count; i++){
-            (
-                , , ,
-                uint256 amountIn,
-                ,
-                bool filled
-            ) = orderBook.orders(i);
-
-            if (filled) {
-                total += amountIn;
-                filledCount++;
-            }
-
-        }
-
-        require(filledCount > 0, "No Filled orders");
-        price = total / filledCount;
-
-    }
-
 
     /**
     * @dev execute a batch of matched orders.
@@ -85,22 +58,36 @@ contract BatchAuction is ReentrancyGuard {
         require(matched > 0, "No matches");
 
         uint256 count = orderBook.getOrdersCount();
+        uint256 filledCount;
+        uint256 total;
+
         // transfer tokenIn from each user for all orders
 
-        for(uint256 i = 0; i < count; i++){
+        for(uint256 i; i < count; ) {
             // Read Order
-            (address user, address tokenIn, , uint256 amountIn, , bool filled) = orderBook.orders(i);
+            OrderBook.Order memory o = orderBook.getOrder(i);
 
-            IERC20(tokenIn).safeTransferFrom(
-                user,
-                address(this),
-                amountIn
-            );
+            if (o.filled) {
+                // transfer tokenIn from user to this contract
+
+                IERC20(o.tokenIn).safeTransferFrom(
+                    o.user,
+                    address(this),
+                    o.amountIn
+                );
+
+                total += o.amountIn;
+                filledCount++;
+            }
+
+            unchecked { ++i; }
         }
+        
+        require(filledCount > 0, "No filled orders");
+        uint256 clearingPrice = total / filledCount;
 
-        uint256 clearingPrice = computClearingPrice();
         emit ClearingPrice(clearingPrice);
-        emit BatchExecuted(count);
+        emit BatchExecuted(filledCount);
     }
 
 

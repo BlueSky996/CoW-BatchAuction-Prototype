@@ -16,32 +16,21 @@ contract MatchingEngine {
     function matchOrders() external returns (uint256 matchedCount){
         uint256 count = orderBook.getOrdersCount();
 
-        for (uint256 i = 0; i < count; i++) {
-            (
-                ,
-                address buyTokenIn,
-                address buyTokenOut,
-                ,
-                OrderBook.Side buySide,
-                bool buyFilled
-            ) = orderBook.orders(i);
+        for (uint256 i; i < count; ) {
+            OrderBook.Order memory buy = orderBook.getOrder(i);
 
-            if (buySide != OrderBook.Side.Buy || buyFilled) continue;
+            if (buy.side != OrderBook.Side.Buy || buy.filled) {
+                unchecked { ++i; }
+                continue;
+            }
 
-            for (uint256 j = i + 1; j < count; j++) {
-                (
-                    ,
-                    address sellTokenIn,
-                    address sellTokenOut,
-                    ,
-                    OrderBook.Side sellSide,
-                    bool sellFilled
-                ) = orderBook.orders(j);
+            for (uint256 j = i + 1; j < count; ) {
+                OrderBook.Order memory sell = orderBook.getOrder(j);
 
                 if (
-                    sellSide == OrderBook.Side.Sell && !sellFilled && 
-                    buyTokenIn == sellTokenOut &&
-                    buyTokenOut == sellTokenIn
+                    sell.side == OrderBook.Side.Sell && !sell.filled && 
+                    buy.tokenIn == sell.tokenOut &&
+                    buy.tokenOut == sell.tokenIn
                 ) {
                     orderBook.markFilled(i);
                     orderBook.markFilled(j);
@@ -50,6 +39,15 @@ contract MatchingEngine {
                     matchedCount++;
                     break;
                 }
+
+
+                unchecked {
+                    ++j;
+                }
+
+            }
+            unchecked {
+                ++i;
             }
         }
     }
